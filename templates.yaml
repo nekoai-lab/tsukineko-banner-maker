@@ -1,0 +1,280 @@
+# Banner templates configuration
+# Generate系: 8個 / Edit系: 4個
+
+templates:
+  # ============================================
+  # Generate系テンプレート（8個）
+  # ============================================
+
+  - id: t01
+    label: "キャラ統一バナー（3案）"
+    description: "同じキャラクターで構図違いの3パターンを生成。アングルやポーズのバリエーションを自動展開します。"
+    action: generate
+    n: 3
+    fields:
+      - intent_ja
+      - palette
+      - variation_axis
+      - variation_details
+    defaults:
+      variation_axis: composition
+      variation_details:
+        - "正面アングル・全身"
+        - "斜め上アングル・バストアップ"
+        - "横顔・クローズアップ"
+
+  - id: t02
+    label: "文字入りバナー"
+    description: "指定したテキストを正確に描画するバナー。text_verbatimで文字列を厳密指定します。"
+    action: generate
+    n: 1
+    fields:
+      - intent_ja
+      - palette
+      - text_verbatim
+      - layout_preference
+    defaults:
+      layout_preference: text_centered
+    required:
+      - text_verbatim
+
+  - id: t03
+    label: "季節感バリエーション"
+    description: "春夏秋冬の4パターンを一括生成。季節ごとの配色・モチーフを自動適用します。"
+    action: generate
+    n: 4
+    fields:
+      - intent_ja
+      - palette
+      - variation_axis
+      - variation_details
+    defaults:
+      variation_axis: season
+      variation_details:
+        - "春：桜、パステルピンク、新緑"
+        - "夏：向日葵、青空、海、爽やかブルー"
+        - "秋：紅葉、オレンジ、ハロウィン"
+        - "冬：雪、クリスマス、暖色の灯り"
+
+  - id: t04
+    label: "色違いバナー（3案）"
+    description: "同じデザインで配色違いの3パターンを生成。paletteを重視したカラーバリエーション展開。"
+    action: generate
+    n: 3
+    fields:
+      - intent_ja
+      - palette
+      - variation_axis
+      - variation_details
+    defaults:
+      variation_axis: palette
+      variation_details:
+        - "暖色系：赤・オレンジ・ゴールド"
+        - "寒色系：青・紫・シルバー"
+        - "ナチュラル系：緑・ベージュ・ブラウン"
+
+  - id: t05
+    label: "サイズ展開テンプレ"
+    description: "複数サイズを一括生成。SNS用・バナー用など用途別サイズセットを指定できます。"
+    action: generate
+    n: 3
+    fields:
+      - intent_ja
+      - palette
+      - size_set
+      - layout_preference
+    defaults:
+      size_set:
+        - name: "Twitter/Xヘッダー"
+          width: 1500
+          height: 500
+        - name: "Instagramスクエア"
+          width: 1080
+          height: 1080
+        - name: "YouTubeサムネイル"
+          width: 1280
+          height: 720
+
+  - id: t06
+    label: "シンプルロゴバナー"
+    description: "余白を多めに取ったシンプルなロゴ中心のバナー。ミニマルで洗練されたデザイン。"
+    action: generate
+    n: 1
+    fields:
+      - intent_ja
+      - palette
+      - layout_preference
+      - text_verbatim
+    defaults:
+      layout_preference: spacious
+      style_hints:
+        - "余白多め"
+        - "中央配置"
+        - "クリーンなデザイン"
+
+  - id: t07
+    label: "情報詰め込み型"
+    description: "イベント告知など情報量の多いバナー向け。layout_denseで要素を効率的に配置します。"
+    action: generate
+    n: 1
+    fields:
+      - intent_ja
+      - palette
+      - text_verbatim
+      - layout_preference
+    defaults:
+      layout_preference: layout_dense
+      style_hints:
+        - "情報優先"
+        - "視認性重視"
+        - "階層的レイアウト"
+
+  - id: t08
+    label: "ミニマルデザイン"
+    description: "要素を最小限に絞った洗練されたデザイン。引き算の美学を追求します。"
+    action: generate
+    n: 1
+    fields:
+      - intent_ja
+      - palette
+      - layout_preference
+    defaults:
+      layout_preference: minimal
+      style_hints:
+        - "要素最小限"
+        - "単色または2色まで"
+        - "シンボリックな表現"
+
+  # ============================================
+  # Edit系テンプレート（4個）
+  # ============================================
+
+  - id: t09
+    label: "色のみ変更"
+    description: "既存画像の配色だけを変更。構図やテキストはそのまま維持します。"
+    action: edit
+    n: 1
+    fields:
+      - base_image
+      - palette
+      - edit_only
+    defaults:
+      edit_only: color
+    required:
+      - base_image
+      - palette
+
+  - id: t10
+    label: "テキストのみ変更"
+    description: "既存画像のテキスト部分のみを差し替え。フォントやレイアウトは維持します。"
+    action: edit
+    n: 1
+    fields:
+      - base_image
+      - text_verbatim
+      - edit_only
+    defaults:
+      edit_only: text
+    required:
+      - base_image
+      - text_verbatim
+
+  - id: t11
+    label: "背景のみ変更"
+    description: "既存画像の背景だけを差し替え。前景の要素はそのまま維持します。"
+    action: edit
+    n: 1
+    fields:
+      - base_image
+      - intent_ja
+      - palette
+      - edit_only
+    defaults:
+      edit_only: background
+    required:
+      - base_image
+
+  - id: t12
+    label: "小物追加"
+    description: "既存画像に装飾やアイコンなどの小物を追加。元のデザインを活かしつつアクセントを加えます。"
+    action: edit
+    n: 1
+    fields:
+      - base_image
+      - intent_ja
+      - edit_only
+    defaults:
+      edit_only: add_element
+      style_hints:
+        - "既存要素を損なわない"
+        - "自然な追加"
+    required:
+      - base_image
+      - intent_ja
+
+# ============================================
+# フィールド定義（参照用）
+# ============================================
+field_definitions:
+  intent_ja:
+    type: textarea
+    label: "作りたいバナーの説明"
+    placeholder: "例：猫カフェの春キャンペーン用バナー、桜と猫のイラスト入り"
+
+  palette:
+    type: color_picker
+    label: "カラーパレット"
+    multiple: true
+    max_colors: 5
+
+  variation_axis:
+    type: select
+    label: "バリエーション軸"
+    options:
+      - composition
+      - season
+      - palette
+      - style
+
+  variation_details:
+    type: list
+    label: "バリエーション詳細"
+    item_type: text
+
+  text_verbatim:
+    type: text
+    label: "表示テキスト（厳密指定）"
+    placeholder: "バナーに表示する正確なテキストを入力"
+
+  layout_preference:
+    type: select
+    label: "レイアウト設定"
+    options:
+      - text_centered
+      - spacious
+      - layout_dense
+      - minimal
+      - asymmetric
+
+  size_set:
+    type: size_presets
+    label: "サイズセット"
+    presets:
+      - twitter_header
+      - instagram_square
+      - youtube_thumbnail
+      - custom
+
+  base_image:
+    type: image_upload
+    label: "編集する画像"
+    accept: "image/png,image/jpeg,image/webp"
+
+  edit_only:
+    type: select
+    label: "編集対象"
+    options:
+      - color
+      - text
+      - background
+      - add_element
