@@ -1,0 +1,11 @@
+{
+  "references": [
+    {
+      "id": "ref_001",
+      "name": "月ねこ",
+      "type": "character",
+      "filename": "ref_001.png"
+    }
+  ],
+  "max_count": 5
+}

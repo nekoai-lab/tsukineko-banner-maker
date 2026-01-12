@@ -7,8 +7,10 @@ Streamlit UI for AI-powered banner generation
 import os
 import base64
 import io
+import json
 from datetime import datetime
 from typing import Optional
+from pathlib import Path
 
 import streamlit as st
 import yaml
@@ -17,6 +19,10 @@ from openai import OpenAI, RateLimitError, BadRequestError, APIError
 from PIL import Image
 
 from prompt_builder import build_generate_prompt, build_edit_prompt, add_image_references
+
+# 参照画像ライブラリのパス
+SAVED_REFERENCES_DIR = Path("assets/saved_references")
+SAVED_REFERENCES_JSON = Path("saved_references.json")
 
 # 環境変数の読み込み
 load_dotenv()
@@ -109,13 +115,30 @@ st.markdown("""
     section[data-testid="stSidebar"] div[data-testid="stText"] {
         color: black !important;
     }
-    /* ラジオボタン・チェックボックスのオプションテキスト */
-    .stRadio div[role="radiogroup"] label,
-    .stRadio div[role="radiogroup"] label span,
-    .stRadio div[role="radiogroup"] label p,
-    .stCheckbox span,
-    .stSelectbox div[data-baseweb="select"] span {
+    /* ラジオボタン・チェックボックスのオプションテキスト（メインエリア） */
+    .main .stRadio div[role="radiogroup"] label,
+    .main .stRadio div[role="radiogroup"] label span,
+    .main .stRadio div[role="radiogroup"] label p,
+    .main .stCheckbox span,
+    .main .stSelectbox div[data-baseweb="select"] span,
+    /* バリエーション軸のラジオボタン（メインエリア） */
+    section.main .stRadio label,
+    section.main .stRadio label span,
+    section.main .stRadio p,
+    [data-testid="stMainBlockContainer"] .stRadio label,
+    [data-testid="stMainBlockContainer"] .stRadio label span,
+    [data-testid="stMainBlockContainer"] .stRadio div[role="radiogroup"] label,
+    [data-testid="stMainBlockContainer"] .stRadio div[role="radiogroup"] label span,
+    [data-testid="stMainBlockContainer"] .stRadio div[role="radiogroup"] p,
+    .stRadio[data-testid="stRadio"] label span,
+    div[data-baseweb="radio"] label {
         color: white !important;
+    }
+    /* サイドバー内のラジオボタンは黒文字 */
+    section[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label,
+    section[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label span,
+    section[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label p {
+        color: black !important;
     }
     /* st.info(), st.warning(), st.error() のテキストを白に */
     .stAlert [data-testid="stMarkdownContainer"] p {
@@ -123,6 +146,23 @@ st.markdown("""
     }
     /* サイドバーのアラートは黒文字 */
     section[data-testid="stSidebar"] .stAlert p {
+        color: black !important;
+    }
+    /* ポップオーバー内のテキストを黒に */
+    [data-testid="stPopover"] p,
+    [data-testid="stPopover"] strong,
+    [data-testid="stPopover"] th,
+    [data-testid="stPopover"] td,
+    [data-testid="stPopover"] .stMarkdown,
+    div[data-baseweb="popover"] p,
+    div[data-baseweb="popover"] strong,
+    div[data-baseweb="popover"] th,
+    div[data-baseweb="popover"] td {
+        color: black !important;
+    }
+    /* Manage Library内のExpander内テキストを黒に */
+    section[data-testid="stSidebar"] .stExpander [data-testid="stMarkdownContainer"] p,
+    section[data-testid="stSidebar"] .stExpander [data-testid="stMarkdownContainer"] strong {
         color: black !important;
     }
     .generated-image {
@@ -215,6 +255,229 @@ def increment_generation_count(quality: str):
     }
     key = quality_key_map.get(quality, "standard")
     st.session_state.generation_count[key] += 1
+
+
+# ============================================
+# 参照画像ライブラリ管理
+# ============================================
+def load_saved_references() -> dict:
+    """保存された参照画像の情報を読み込む"""
+    if not SAVED_REFERENCES_JSON.exists():
+        return {"references": [], "max_count": 5}
+    
+    try:
+        with open(SAVED_REFERENCES_JSON, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {"references": [], "max_count": 5}
+
+
+def save_references_json(data: dict):
+    """参照画像の情報を保存"""
+    with open(SAVED_REFERENCES_JSON, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def add_saved_reference(name: str, image_data: bytes, ref_type: str = "character") -> bool:
+    """
+    参照画像を保存（最大3つまで）
+    
+    Args:
+        name: 表示名
+        image_data: 画像のバイトデータ
+        ref_type: タイプ（character, color, material）
+    
+    Returns:
+        成功したかどうか
+    """
+    data = load_saved_references()
+    
+    # 最大数チェック
+    if len(data["references"]) >= data["max_count"]:
+        return False
+    
+    # 新しいIDを生成
+    existing_ids = [r["id"] for r in data["references"]]
+    for i in range(1, 100):
+        new_id = f"ref_{i:03d}"
+        if new_id not in existing_ids:
+            break
+    
+    # フォルダがなければ作成
+    SAVED_REFERENCES_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # 画像を保存
+    image_path = SAVED_REFERENCES_DIR / f"{new_id}.png"
+    
+    # PIL Imageに変換して保存
+    try:
+        img = Image.open(io.BytesIO(image_data))
+        # リサイズ（大きすぎる場合）
+        max_size = 512
+        if img.width > max_size or img.height > max_size:
+            img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+        img.save(image_path, "PNG")
+    except Exception as e:
+        st.error(f"Failed to save image: {e}")
+        return False
+    
+    # JSONに追加
+    data["references"].append({
+        "id": new_id,
+        "name": name,
+        "type": ref_type,
+        "filename": f"{new_id}.png"
+    })
+    save_references_json(data)
+    
+    return True
+
+
+def delete_saved_reference(ref_id: str) -> bool:
+    """保存された参照画像を削除"""
+    data = load_saved_references()
+    
+    # 該当の参照を探す
+    ref_to_delete = None
+    for ref in data["references"]:
+        if ref["id"] == ref_id:
+            ref_to_delete = ref
+            break
+    
+    if not ref_to_delete:
+        return False
+    
+    # ファイルを削除
+    image_path = SAVED_REFERENCES_DIR / ref_to_delete["filename"]
+    if image_path.exists():
+        image_path.unlink()
+    
+    # JSONから削除
+    data["references"] = [r for r in data["references"] if r["id"] != ref_id]
+    save_references_json(data)
+    
+    return True
+
+
+def get_saved_reference_image(ref_id: str) -> Optional[tuple[Image.Image, str]]:
+    """
+    保存された参照画像を取得
+    
+    Returns:
+        (PIL Image, base64文字列) または None
+    """
+    data = load_saved_references()
+    
+    for ref in data["references"]:
+        if ref["id"] == ref_id:
+            image_path = SAVED_REFERENCES_DIR / ref["filename"]
+            if image_path.exists():
+                img = Image.open(image_path)
+                # base64に変換
+                buffered = io.BytesIO()
+                img.save(buffered, format="PNG")
+                b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
+                return img, b64
+    
+    return None
+
+
+# ============================================
+# 参照画像分析（Vision API使用）
+# ============================================
+def analyze_reference_images(ref_images: list[dict]) -> str:
+    """
+    参照画像をVision APIで分析し、詳細な特徴を抽出
+    
+    Args:
+        ref_images: 参照画像リスト [{"type": "character"|"color"|"material", "b64": str, "name": str}]
+    
+    Returns:
+        分析結果のテキスト（プロンプトに追加用）
+    """
+    if not client or not ref_images:
+        return ""
+    
+    # 画像タイプ別の分析プロンプト
+    analysis_prompts = {
+        "character": """Analyze this character reference image and describe:
+1. Character's distinctive visual features (hair color/style, eye color, facial features)
+2. Outfit/clothing details (colors, style, accessories)
+3. Art style (anime, realistic, chibi, etc.)
+4. Overall color palette used for the character
+Be concise but specific. Output in English.""",
+        
+        "background": """Analyze this background/scene reference image and describe:
+1. Scene type (indoor/outdoor, natural/urban, fantasy/realistic)
+2. Key visual elements (buildings, nature, objects)
+3. Lighting and atmosphere (time of day, mood, weather)
+4. Color palette and overall aesthetic
+Be concise but specific. Output in English.""",
+        
+        "style": """Analyze this style reference image and describe:
+1. Dominant colors and color harmony
+2. Art style and visual aesthetic
+3. Textures, patterns, and decorative elements
+4. Overall mood and atmosphere to replicate
+Be concise but specific. Output in English."""
+    }
+    
+    analysis_results = []
+    
+    for img in ref_images:
+        img_type = img.get("type", "style")
+        b64_data = img.get("b64", "")
+        
+        if not b64_data:
+            continue
+        
+        # 分析用プロンプト
+        system_prompt = analysis_prompts.get(img_type, analysis_prompts["style"])
+        
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",  # コスト効率のためminiを使用
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": system_prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{b64_data}",
+                                    "detail": "low"  # コスト削減
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=300
+            )
+            
+            analysis = response.choices[0].message.content
+            
+            # タイプ別にフォーマット
+            type_labels = {
+                "character": "CHARACTER FEATURES",
+                "background": "BACKGROUND & SCENE",
+                "style": "STYLE & ATMOSPHERE"
+            }
+            label = type_labels.get(img_type, "REFERENCE")
+            analysis_results.append(f"[{label} FROM REFERENCE IMAGE]\n{analysis}")
+            
+        except Exception as e:
+            # 分析失敗時はスキップ（画像生成は続行）
+            error_msg = str(e)
+            st.warning(f"Reference image analysis skipped: {error_msg}")
+            # デバッグ用：エラー詳細をexpanderで表示
+            with st.expander("Error details", expanded=False):
+                st.code(error_msg)
+            continue
+    
+    if analysis_results:
+        return "\n\n".join(analysis_results)
+    return ""
 
 
 # ============================================
@@ -564,87 +827,146 @@ def process_uploaded_image(uploaded_file) -> dict:
     }
 
 
-def render_reference_uploaders() -> list[dict]:
+def render_reference_library() -> list[dict]:
     """
-    参照画像アップローダーをレンダリング
+    参照画像ライブラリをレンダリング
+    保存された参照画像から選択、または新規追加
     
     Returns:
-        参照画像のリスト [{"type": str, "b64": str, "name": str}, ...]
+        選択された参照画像のリスト [{"type": str, "b64": str, "name": str}, ...]
     """
     ref_images = []
+    saved_data = load_saved_references()
+    saved_refs = saved_data.get("references", [])
+    max_count = saved_data.get("max_count", 5)
     
-    # キャラ参照
-    with st.expander("Character Reference", expanded=False):
-        char_files = st.file_uploader(
-            "Character design reference images",
-            type=["png", "jpg", "jpeg"],
-            accept_multiple_files=True,
-            key="ref_character",
-            help="Images for character appearance reference"
-        )
+    # --- 参照画像の選択 ---
+    st.markdown("#### Use Reference")
+    
+    # 選択肢を構築
+    options = ["None (参照しない)"]
+    option_ids = [None]
+    
+    for ref in saved_refs:
+        options.append(f"{ref['name']} ({ref['type']})")
+        option_ids.append(ref["id"])
+    
+    selected_index = st.radio(
+        "Select reference image",
+        options=range(len(options)),
+        format_func=lambda x: options[x],
+        index=0,
+        key="ref_selection",
+        label_visibility="collapsed"
+    )
+    
+    # 選択された参照画像を取得
+    selected_id = option_ids[selected_index]
+    if selected_id:
+        result = get_saved_reference_image(selected_id)
+        if result:
+            img, b64 = result
+            # 選択された画像をプレビュー
+            st.image(img, width=100, caption=options[selected_index])
+            
+            # 参照情報を取得
+            ref_info = next((r for r in saved_refs if r["id"] == selected_id), None)
+            if ref_info:
+                ref_images.append({
+                    "type": ref_info.get("type", "character"),
+                    "b64": b64,
+                    "name": ref_info["name"]
+                })
+    
+    st.divider()
+    
+    # --- 参照画像ライブラリ管理 ---
+    with st.expander(f"Manage Library ({len(saved_refs)}/{max_count})", expanded=False):
         
-        if char_files:
-            cols = st.columns(min(len(char_files), 3))
-            for i, f in enumerate(char_files):
-                with cols[i % 3]:
-                    img_data = process_uploaded_image(f)
-                    st.image(img_data["image"], width=80)
-                    ref_images.append({
-                        "type": "character",
-                        "b64": img_data["b64"],
-                        "name": img_data["name"]
-                    })
-            st.caption(f"{len(char_files)} character reference(s) added")
-    
-    # 色/世界観参照
-    with st.expander("Color/Atmosphere Reference", expanded=False):
-        color_files = st.file_uploader(
-            "Color palette and atmosphere reference images",
-            type=["png", "jpg", "jpeg"],
-            accept_multiple_files=True,
-            key="ref_color",
-            help="Images for color palette and mood reference"
-        )
+        # 保存済み画像の表示
+        if saved_refs:
+            st.markdown("**Saved References:**")
+            for ref in saved_refs:
+                col1, col2, col3 = st.columns([1, 2, 1])
+                
+                with col1:
+                    # サムネイル表示
+                    result = get_saved_reference_image(ref["id"])
+                    if result:
+                        img, _ = result
+                        st.image(img, width=60)
+                
+                with col2:
+                    st.markdown(f"**{ref['name']}**")
+                    st.caption(f"Type: {ref['type']}")
+                
+                with col3:
+                    if st.button("Delete", key=f"del_{ref['id']}", type="secondary"):
+                        if delete_saved_reference(ref["id"]):
+                            st.success(f"Deleted: {ref['name']}")
+                            st.rerun()
+            
+            st.divider()
         
-        if color_files:
-            cols = st.columns(min(len(color_files), 3))
-            for i, f in enumerate(color_files):
-                with cols[i % 3]:
-                    img_data = process_uploaded_image(f)
-                    st.image(img_data["image"], width=80)
-                    ref_images.append({
-                        "type": "color",
-                        "b64": img_data["b64"],
-                        "name": img_data["name"]
-                    })
-            st.caption(f"{len(color_files)} color reference(s) added")
+        # 新規追加
+        if len(saved_refs) < max_count:
+            st.markdown("**Add New Reference:**")
+            
+            new_name = st.text_input(
+                "Name",
+                placeholder="e.g. Tsukineko, Background A",
+                key="new_ref_name"
+            )
+            
+            # Type選択とヘルプ
+            type_col, help_col = st.columns([4, 1])
+            
+            with type_col:
+                type_options = {
+                    "character": "キャラクター",
+                    "background": "背景",
+                    "style": "スタイル"
+                }
+                new_type = st.selectbox(
+                    "Type",
+                    options=list(type_options.keys()),
+                    format_func=lambda x: type_options[x],
+                    index=0,
+                    key="new_ref_type"
+                )
+            
+            with help_col:
+                st.markdown("")  # スペーサー
+                with st.popover("?"):
+                    st.markdown("""
+**Type の説明**
+
+| Type | 用途 |
+|------|------|
+| **キャラクター** | キャラの外見参照（髪色、服装、アートスタイル） |
+| **背景** | 背景/シーン参照（風景、建物、雰囲気） |
+| **スタイル** | 色味/雰囲気/素材をまとめて参照 |
+""")
+            
+            new_file = st.file_uploader(
+                "Image",
+                type=["png", "jpg", "jpeg"],
+                key="new_ref_file"
+            )
+            
+            if st.button("Save Reference", type="primary", disabled=not (new_name and new_file)):
+                if new_name and new_file:
+                    if add_saved_reference(new_name, new_file.getvalue(), new_type):
+                        st.success(f"Saved: {new_name}")
+                        st.rerun()
+                    else:
+                        st.error("Failed to save (max limit reached)")
+        else:
+            st.info(f"Library full ({max_count}/{max_count}). Delete to add more.")
     
-    # 素材参照
-    with st.expander("Material Reference", expanded=False):
-        material_files = st.file_uploader(
-            "Texture and decoration reference images",
-            type=["png", "jpg", "jpeg"],
-            accept_multiple_files=True,
-            key="ref_material",
-            help="Images for texture and decorative elements reference"
-        )
-        
-        if material_files:
-            cols = st.columns(min(len(material_files), 3))
-            for i, f in enumerate(material_files):
-                with cols[i % 3]:
-                    img_data = process_uploaded_image(f)
-                    st.image(img_data["image"], width=80)
-                    ref_images.append({
-                        "type": "material",
-                        "b64": img_data["b64"],
-                        "name": img_data["name"]
-                    })
-            st.caption(f"{len(material_files)} material reference(s) added")
-    
-    # 参照画像のサマリー
+    # 選択結果のサマリー
     if ref_images:
-        st.success(f"Reference images: {len(ref_images)} total")
+        st.success(f"Using: {ref_images[0]['name']}")
     
     return ref_images
 
@@ -775,10 +1097,10 @@ def render_sidebar():
         
         st.divider()
         
-        # 参照画像アップロード
-        st.markdown("### Reference Images")
+        # 参照画像ライブラリ
+        st.markdown("### Reference Library")
         
-        ref_images = render_reference_uploaders()
+        ref_images = render_reference_library()
         
         return {
             "model": model,
@@ -823,28 +1145,46 @@ def render_field(field_name: str, template: dict, field_defs: dict) -> any:
             help="Enter the exact text to be rendered on the banner"
         )
     
-    # variation_axis: ラジオボタン
+    # variation_axis: ラジオボタン（日本語化 + ポップアップ）
     elif field_name == "variation_axis":
         axis_options = {
-            "None": None,
-            "palette": "palette",
-            "composition": "composition",
-            "expression": "expression",
-            "season": "season"
+            "なし": None,
+            "カラー": "palette",
+            "構図": "composition",
+            "表情": "expression",
+            "季節": "season"
         }
+        # 内部値 → 日本語表示名（逆引き用）
+        value_to_label = {v: k for k, v in axis_options.items()}
+        
         default_axis = defaults.get("variation_axis")
-        default_index = 0
-        for i, (k, v) in enumerate(axis_options.items()):
-            if v == default_axis:
-                default_index = i
-                break
+        default_label = value_to_label.get(default_axis, "なし")
+        default_index = list(axis_options.keys()).index(default_label) if default_label in axis_options else 0
+        
+        # ラベルとヘルプボタンを横並び
+        label_col, help_col = st.columns([4, 1])
+        with label_col:
+            st.markdown(f"**{label}**")
+        with help_col:
+            with st.popover("?"):
+                st.markdown("""
+**バリエーション軸の説明**
+
+| オプション | 説明 |
+|-----------|------|
+| **なし** | バリエーションなし（単一生成） |
+| **カラー** | 色味を変えたバリエーション |
+| **構図** | アングル・配置を変えたバリエーション |
+| **表情** | キャラクターの表情を変えたバリエーション |
+| **季節** | 季節感を変えたバリエーション |
+""")
         
         selected = st.radio(
             label,
             options=list(axis_options.keys()),
             index=default_index,
             horizontal=True,
-            help="Select the axis for variation generation"
+            label_visibility="collapsed"
         )
         return axis_options[selected]
     
@@ -875,8 +1215,7 @@ def render_field(field_name: str, template: dict, field_defs: dict) -> any:
             with col:
                 colors[name.lower()] = st.color_picker(
                     name,
-                    value=default_colors[i],
-                    help=f"Select {name} color"
+                    value=default_colors[i]
                 )
         return colors
     
@@ -926,27 +1265,46 @@ def render_field(field_name: str, template: dict, field_defs: dict) -> any:
         )
         return edit_options[selected]
     
-    # layout_preference: セレクトボックス
+    # layout_preference: セレクトボックス（日本語化）
     elif field_name == "layout_preference":
+        # 日本語表示名 → 内部値
         layout_options = {
-            "text_centered": "text_centered",
-            "spacious": "spacious",
-            "layout_dense": "layout_dense",
-            "minimal": "minimal",
-            "asymmetric": "asymmetric"
+            "テキスト中央": "text_centered",
+            "余白重視": "spacious",
+            "情報量重視": "layout_dense",
+            "ミニマル": "minimal",
+            "非対称": "asymmetric"
         }
+        # 内部値 → 日本語表示名（逆引き用）
+        value_to_label = {v: k for k, v in layout_options.items()}
+        
         default_layout = defaults.get("layout_preference", "text_centered")
-        default_index = 0
-        for i, v in enumerate(layout_options.values()):
-            if v == default_layout:
-                default_index = i
-                break
+        default_label = value_to_label.get(default_layout, "テキスト中央")
+        default_index = list(layout_options.keys()).index(default_label) if default_label in layout_options else 0
+        
+        # ラベルとヘルプボタンを横並び
+        label_col, help_col = st.columns([4, 1])
+        with label_col:
+            st.markdown(f"**{label}**")
+        with help_col:
+            with st.popover("?"):
+                st.markdown("""
+**レイアウト設定の説明**
+
+| オプション | 説明 |
+|-----------|------|
+| **テキスト中央** | テキストを中央に配置、バランスの取れた構図 |
+| **余白重視** | 余白を多めに取り、ミニマルな要素配置 |
+| **情報量重視** | 情報を詰め込んだ、効率的なスペース使用 |
+| **ミニマル** | 必要最小限の要素のみ、超シンプル |
+| **非対称** | 動的な非対称構図、視覚的なインパクト |
+""")
         
         selected = st.selectbox(
             label,
             options=list(layout_options.keys()),
             index=default_index,
-            help="Select the layout style"
+            label_visibility="collapsed"
         )
         return layout_options[selected]
     
@@ -1021,12 +1379,37 @@ def render_main_area(templates: list, field_defs: dict, settings: dict):
     # テンプレート選択
     template_options = {f"{t['label']} ({t['id']})": t for t in templates}
     
+    # ラベルとヘルプボタン
+    label_col, help_col = st.columns([6, 1])
+    with label_col:
+        st.markdown("**Select Template**")
+    with help_col:
+        with st.popover("?"):
+            st.markdown("""
+**テンプレート一覧**
+
+| テンプレート | 説明 |
+|-------------|------|
+| **キャラ統一バナー（3案）** | 構図違いの3パターン生成 |
+| **文字入りバナー** | テキストを正確に描画 |
+| **季節感バリエーション** | 春夏秋冬の4パターン |
+| **色違いバナー（3案）** | 配色違いの3パターン |
+| **サイズ展開テンプレ** | 複数サイズを一括生成 |
+| **シンプルロゴバナー** | 余白多めのミニマル |
+| **情報詰め込み型** | 情報量の多いバナー |
+| **ミニマルデザイン** | 要素を最小限に |
+| **色調整** | 既存画像の色味変更 |
+| **テキスト差替え** | 文字部分のみ編集 |
+| **背景入替え** | 背景を別の画像に |
+| **要素追加** | 画像に要素を追加 |
+""")
+    
     col1, col2 = st.columns([2, 1])
     with col1:
         selected_label = st.selectbox(
             "Select Template",
             options=list(template_options.keys()),
-            help="Choose a template to use"
+            label_visibility="collapsed"
         )
     
     selected_template = template_options[selected_label]
@@ -1106,10 +1489,16 @@ def render_main_area(templates: list, field_defs: dict, settings: dict):
             else:
                 prompt = build_edit_prompt(payload)
             
-            # 参照画像がある場合はプロンプトに追加
+            # 参照画像がある場合はVision APIで分析してプロンプトに追加
             ref_images = settings.get("ref_images", [])
+            ref_analysis = ""
             if ref_images:
-                prompt = add_image_references(prompt, ref_images)
+                with st.spinner("Analyzing reference images..."):
+                    ref_analysis = analyze_reference_images(ref_images)
+                
+                if ref_analysis:
+                    # 分析結果をプロンプトの先頭に追加
+                    prompt = f"{ref_analysis}\n\n---\n\n{prompt}"
             
             st.session_state.last_prompt = prompt
             
@@ -1117,8 +1506,8 @@ def render_main_area(templates: list, field_defs: dict, settings: dict):
             if settings["show_prompt"]:
                 with st.expander("Generated Prompt", expanded=True):
                     st.code(prompt, language="text")
-                if ref_images:
-                    st.info(f"Reference images: {len(ref_images)} attached")
+                if ref_images and ref_analysis:
+                    st.success(f"Reference images analyzed: {len(ref_images)} image(s)")
             
             # 生成処理
             try:
