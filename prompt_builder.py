@@ -53,6 +53,9 @@ VARIATION = """
 - Keep ALL other aspects identical across variations.
 - Each variation should be distinctly different along the specified axis.
 - Maintain consistency in quality, style, and overall aesthetic.
+- IMPORTANT: Generate ONLY ONE specific variation per image. 
+- DO NOT use split-screen, grids, or collage layouts.
+- DO NOT show multiple variations within a single image.
 """.strip()
 
 
@@ -263,7 +266,7 @@ def convert_palette_dict_to_description(palette: dict) -> str:
 # プロンプト生成関数
 # ============================================
 
-def build_generate_prompt(payload: dict) -> str:
+def build_generate_prompt(payload: dict, specific_variation: Optional[str] = None) -> str:
     """
     Generate用プロンプトを構築
     
@@ -277,6 +280,7 @@ def build_generate_prompt(payload: dict) -> str:
             - variation_details: バリエーション詳細（オプション）
             - text_verbatim: 表示テキスト（オプション）
             - layout_preference: レイアウト設定（オプション）
+        specific_variation: 特定のバリエーション詳細（1つ分のみ）
     
     Returns:
         完全なプロンプト文字列
@@ -303,10 +307,11 @@ def build_generate_prompt(payload: dict) -> str:
     # 4. バリエーションルール（variation_axisがある場合）
     variation_axis = payload.get("variation_axis")
     if variation_axis:
-        variation_details = payload.get("variation_details", "as specified")
+        # 渡された specific_variation を優先、なければ payload から取得
+        details = specific_variation if specific_variation else payload.get("variation_details", "as specified")
         variation_block = VARIATION.format(
             variation_axis=variation_axis,
-            variation_details=variation_details
+            variation_details=details
         )
         prompt_parts.append(variation_block)
         prompt_parts.append("")

@@ -42,145 +42,311 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# カスタムCSS
+# カスタムCSS - アトリエ・プレミアムデザイン (Character Edition)
 st.markdown("""
 <style>
-    .stApp {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    /* ========================================
+       アトリエ・プレミアムデザイン
+       ======================================== */
+    
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+    
+    /* ヘッダーバーとフッターを非表示にする */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+
+    :root {
+        --bg-main: #fdfcf8;
+        --bg-sidebar: #f2f0eb;
+        --glass-bg: rgba(255, 255, 255, 0.9);
+        
+        /* テキストカラー・トークン */
+        --text-primary: #3a3a3a;   /* メイン見出し・本文 */
+        --text-secondary: #5a5a5a; /* ラベル・小見出し */
+        --text-muted: #8d775f;     /* 補助文・装飾（ブランドカラー） */
+        --text-light: #a0a0a0;     /* 無効・注釈 */
+        
+        --accent-primary: #8d775f;
+        --accent-gradient: linear-gradient(135deg, #3a3a3a 0%, #8d775f 100%);
+        --border-color: rgba(141, 119, 95, 0.2);
+        --card-shadow: 0 12px 40px rgba(141, 119, 95, 0.08);
+        
+        /* フォントスタック */
+        --font-main: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    .main-header {
-        background: linear-gradient(90deg, #e94560, #ff6b6b);
+    
+    .stApp {
+        background-color: var(--bg-main) !important;
+        background-image: radial-gradient(var(--border-color) 0.5px, transparent 0.5px) !important;
+        background-size: 30px 30px !important;
+        font-family: var(--font-main) !important;
+        margin-top: -20px; /* 引き上げを大幅に緩和 */
+    }
+    
+    /* 垂直ブロックの間隔を全体的に詰める */
+    [data-testid="stVerticalBlock"] {
+        gap: 0.8rem !important;
+    }
+
+    /* 役割クラス（タイポグラフィ） */
+    .heading-1 {
+        font-size: 3rem !important; /* 少し大きくして存在感を出す */
+        font-weight: 900 !important;
+        /* メタリックな質感のグラデーション */
+        background: linear-gradient(135deg, #3a3a3a 20%, #8d775f 50%, #3a3a3a 80%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size: 2.5rem;
-        font-weight: 800;
         text-align: center;
-        margin-bottom: 1rem;
+        letter-spacing: -0.03em;
+        margin-bottom: 0.2rem !important;
+        text-shadow: 0 10px 20px rgba(141, 119, 95, 0.1);
     }
-    .template-description {
-        background: rgba(255, 255, 255, 0.05);
-        border-left: 4px solid #e94560;
-        padding: 1rem;
-        border-radius: 0 8px 8px 0;
-        margin: 1rem 0;
+    
+    .hero-section {
+        text-align: center;
+        padding: 1.5rem 2.5rem 0.4rem 2.5rem; 
+        margin: -2.3rem -2.6rem 0.6rem -2.6rem; 
+        background: linear-gradient(180deg, 
+            rgba(93, 77, 63, 0.18) 0%, 
+            rgba(141, 119, 95, 0.08) 50%, 
+            rgba(255, 255, 255, 0) 100%);
+        border-radius: 0;
     }
-    .stButton > button {
-        background: linear-gradient(90deg, #e94560, #ff6b6b);
-        color: white;
-        border: none;
-        padding: 0.75rem 2rem;
+
+    .hero-character-container {
+        display: flex;
+        justify-content: center;
+        margin: 0.2rem 0; 
+        position: relative;
+    }
+
+    .hero-character {
+        filter: drop-shadow(0 12px 30px rgba(141, 119, 95, 0.25));
+        transition: transform 0.4s ease;
+        z-index: 1;
+    }
+
+    .hero-character:hover {
+        transform: translateY(-5px);
+    }
+    
+    .heading-2 {
+        font-size: 1.3rem !important;
+        font-weight: 700 !important;
+        color: var(--text-primary) !important;
+        margin-top: 0.8rem !important; /* 大幅に削減 */
+        margin-bottom: 0.4rem !important;
+        letter-spacing: -0.02em;
+    }
+    
+    .heading-3 {
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        color: var(--text-secondary) !important;
+        margin-top: 0.6rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+    
+    .sub-header {
+        font-size: 0.8rem !important;
+        color: var(--text-muted) !important;
+        text-align: center;
+        margin-bottom: 0.8rem !important; /* 次のセクションとの距離を詰める */
         font-weight: 600;
-        border-radius: 8px;
-        width: 100%;
-        transition: transform 0.2s, box-shadow 0.2s;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
     }
+
+    .label-text {
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        color: var(--text-secondary) !important;
+        margin-bottom: 0.1rem !important;
+        display: block;
+    }
+
+    .helper-text {
+        font-size: 0.75rem !important;
+        color: var(--text-light) !important;
+        line-height: 1.3;
+    }
+
+    /* ウィジェットのラベルをセクション見出し風に整形 */
+    div[data-testid="stWidgetLabel"] p {
+        font-size: 1.1rem !important; /* heading-3相当 */
+        font-weight: 700 !important;
+        color: var(--text-secondary) !important;
+        margin-bottom: -0.2rem !important;
+    }
+    /* テンプレート選択ラベルのみ特別に大きく（heading-2相当） */
+    div[data-testid="stSelectbox"] div[data-testid="stWidgetLabel"] p {
+        font-size: 1.3rem !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* コンテンツコンテナを浮かせる - 余白を再調整 */
+    [data-testid="stMainBlockContainer"] {
+        max-width: 960px;
+        margin: 0 auto !important; /* 上の余白をさらに縮小 */
+        padding: 2.2rem 2.5rem 1rem 2.5rem !important; 
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 0 0 30px 30px; 
+        box-shadow: var(--card-shadow);
+        overflow: hidden; 
+    }
+    
+    /* セクションの区切りをカード化 */
+    .template-description {
+        background: #ffffff !important;
+        border-left: 6px solid var(--accent-primary);
+        padding: 1rem !important; /* コンパクトに */
+        border-radius: 12px;
+        margin: 0.4rem 0 !important;
+        box-shadow: 0 4px 20px rgba(141, 119, 95, 0.05);
+    }
+    
+    .stButton > button {
+        background: var(--accent-gradient) !important;
+        color: #ffffff !important;
+        border: none !important;
+        padding: 0.6rem 2rem !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        border-radius: 10px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 12px rgba(58, 58, 58, 0.15) !important;
+        letter-spacing: 0.02em;
+        margin-top: 0.5rem !important;
+    }
+    
     .stButton > button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(233, 69, 96, 0.4);
+        box-shadow: 0 8px 20px rgba(58, 58, 58, 0.25) !important;
+        opacity: 0.95;
     }
-    .color-palette-container {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
+
+    .stButton > button:active {
+        transform: translateY(0px);
     }
-    /* ラベルテキストを白に */
-    .stSelectbox label,
-    .stTextArea label,
-    .stTextInput label,
-    .stRadio label,
-    .stCheckbox label,
-    .stFileUploader label,
-    .stColorPicker label,
-    .stExpander summary,
-    .stMarkdown p,
-    .stMarkdown strong,
-    section[data-testid="stSidebar"] label,
+
+    .stTextInput input, .stTextArea textarea, .stSelectbox select {
+        border: 1.5px solid #e8e4de !important;
+        border-radius: 12px !important;
+        padding: 0.8rem !important;
+        background-color: #fcfbf9 !important;
+        color: var(--text-main) !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+    
+    /* フォーカス時の赤い線（アウトライン）を完全に削除 */
+    .stTextInput input:focus, .stTextArea textarea:focus,
+    .stTextInput div[data-baseweb="input"]:focus-within,
+    .stTextArea div[data-baseweb="textarea"]:focus-within {
+        border-color: var(--accent-primary) !important;
+        background-color: #ffffff !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+    
+    /* エラー時やバリデーション時の赤い枠線も強制的に無効化 */
+    div[data-baseweb="input"], div[data-baseweb="textarea"] {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* ウィジェット全体のラッパーにかかる余計な外枠をリセット */
+    div[data-testid="stWidgetLabel"] + div {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    section[data-testid="stSidebar"] {
+        background-color: var(--bg-sidebar) !important;
+        border-right: 1px solid rgba(141, 119, 95, 0.1) !important;
+    }
+    
+    section[data-testid="stSidebar"] label p, 
     section[data-testid="stSidebar"] .stMarkdown p {
-        color: white !important;
+        color: var(--text-primary) !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        letter-spacing: 0.01em;
     }
-    h1, h2, h3, h4, h5, h6 {
-        color: white !important;
-    }
-    /* サイドバー全体のテキストを黒文字に */
-    section[data-testid="stSidebar"] h2,
-    section[data-testid="stSidebar"] h3,
-    section[data-testid="stSidebar"] h4,
-    section[data-testid="stSidebar"] label,
-    section[data-testid="stSidebar"] p,
-    section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] .stMarkdown,
-    section[data-testid="stSidebar"] .stMarkdown p,
-    section[data-testid="stSidebar"] .stExpander summary,
-    section[data-testid="stSidebar"] .stExpander p,
-    section[data-testid="stSidebar"] div[data-testid="stText"] {
-        color: black !important;
-    }
-    /* ラジオボタン・チェックボックスのオプションテキスト（メインエリア） */
-    .main .stRadio div[role="radiogroup"] label,
-    .main .stRadio div[role="radiogroup"] label span,
-    .main .stRadio div[role="radiogroup"] label p,
-    .main .stCheckbox span,
-    .main .stSelectbox div[data-baseweb="select"] span,
-    /* バリエーション軸のラジオボタン（メインエリア） */
-    section.main .stRadio label,
-    section.main .stRadio label span,
-    section.main .stRadio p,
-    [data-testid="stMainBlockContainer"] .stRadio label,
-    [data-testid="stMainBlockContainer"] .stRadio label span,
-    [data-testid="stMainBlockContainer"] .stRadio div[role="radiogroup"] label,
-    [data-testid="stMainBlockContainer"] .stRadio div[role="radiogroup"] label span,
-    [data-testid="stMainBlockContainer"] .stRadio div[role="radiogroup"] p,
-    .stRadio[data-testid="stRadio"] label span,
-    div[data-baseweb="radio"] label {
-        color: white !important;
-    }
-    /* サイドバー内のラジオボタンは黒文字 */
-    section[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label,
-    section[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label span,
-    section[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label p {
-        color: black !important;
-    }
-    /* st.info(), st.warning(), st.error() のテキストを白に */
-    .stAlert [data-testid="stMarkdownContainer"] p {
-        color: white !important;
-    }
-    /* サイドバーのアラートは黒文字 */
-    section[data-testid="stSidebar"] .stAlert p {
-        color: black !important;
-    }
-    /* ポップオーバー内のテキストを黒に */
-    [data-testid="stPopover"] p,
-    [data-testid="stPopover"] strong,
-    [data-testid="stPopover"] th,
-    [data-testid="stPopover"] td,
-    [data-testid="stPopover"] .stMarkdown,
-    div[data-baseweb="popover"] p,
-    div[data-baseweb="popover"] strong,
-    div[data-baseweb="popover"] th,
-    div[data-baseweb="popover"] td {
-        color: black !important;
-    }
-    /* Manage Library内のExpander内テキストを黒に */
-    section[data-testid="stSidebar"] .stExpander [data-testid="stMarkdownContainer"] p,
-    section[data-testid="stSidebar"] .stExpander [data-testid="stMarkdownContainer"] strong {
-        color: black !important;
-    }
-    .generated-image {
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-    .cost-warning {
-        background: rgba(255, 193, 7, 0.15);
-        border: 1px solid #ffc107;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-    }
-    .cost-counter {
+
+    .stat-container {
         display: flex;
-        justify-content: space-between;
-        padding: 0.25rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .stat-card {
+        flex: 1;
+        background: #ffffff;
+        border: 1.2px solid #e8e4de; /* 線を少し細く */
+        border-radius: 12px;
+        padding: 10px 2px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(141, 119, 95, 0.02);
+        transition: all 0.2s ease;
+    }
+    .stat-card:hover {
+        border-color: var(--accent-primary);
+        transform: translateY(-1px);
+    }
+    .stat-label {
+        font-size: 0.65rem;
+        color: var(--text-light); /* より控えめに */
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .stat-value {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+    
+    .total-gen-container {
+        text-align: right;
+        margin-top: 4px;
+        margin-bottom: 12px;
+    }
+    .total-gen-text {
+        font-size: 0.8rem;
+        color: var(--text-sub);
+    }
+    .total-gen-value {
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    .stAlert {
+        background-color: #fdf5eb !important;
+        border-left: 5px solid var(--accent-primary) !important;
+        border-radius: 14px !important;
+    }
+
+    .generated-image {
+        border-radius: 24px;
+        box-shadow: 0 30px 60px rgba(141, 119, 95, 0.15);
+        border: 12px solid #ffffff;
+        background: #ffffff;
+    }
+
+    h1, h2, h3 {
+        color: var(--text-main) !important;
+        font-weight: 800;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--text-sub);
+        border-radius: 10px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -496,7 +662,7 @@ def generate_filename(template_id: str, quality: str, output_format: str, index:
 # 画像生成処理
 # ============================================
 def generate_images_with_progress(
-    prompt: str,
+    prompt: any,  # str または list[str]
     model: str,
     n: int,
     size: str,
@@ -523,17 +689,24 @@ def generate_images_with_progress(
     
     images = []
     
+    # プロンプトのリスト化
+    prompts = prompt if isinstance(prompt, list) else [prompt] * n
+    
+    # 枚数とプロンプト数の整合性
+    num_to_gen = min(len(prompts), n)
+    
     # 1枚ずつ生成してプログレス更新
-    for i in range(n):
+    for i in range(num_to_gen):
         if progress_callback:
-            progress_callback(i, n, f"Generating image {i + 1}/{n}...")
+            progress_callback(i, num_to_gen, f"Generating image {i + 1}/{num_to_gen}...")
+        
+        current_prompt = prompts[i]
         
         # API呼び出し（1枚ずつ）
-        # gpt-image-1.5 では response_format は使わない
         if model.startswith("gpt-image"):
             response = client.images.generate(
                 model=model,
-                prompt=prompt,
+                prompt=current_prompt,
                 n=1,
                 size=api_size,
                 quality=api_quality
@@ -541,7 +714,7 @@ def generate_images_with_progress(
         else:
             response = client.images.generate(
                 model=model,
-                prompt=prompt,
+                prompt=current_prompt,
                 n=1,
                 size=api_size,
                 quality=api_quality,
@@ -550,12 +723,10 @@ def generate_images_with_progress(
         
         # 結果を処理
         for data in response.data:
-            # gpt-image-1.5 はb64_json、他のモデルも同様
             b64_data = getattr(data, 'b64_json', None)
             if b64_data:
                 image_bytes = base64.b64decode(b64_data)
             elif hasattr(data, 'url') and data.url:
-                # URLから取得
                 import urllib.request
                 with urllib.request.urlopen(data.url) as resp:
                     image_bytes = resp.read()
@@ -566,17 +737,18 @@ def generate_images_with_progress(
             image = Image.open(io.BytesIO(image_bytes))
             images.append({
                 "image": image,
-                "b64": b64_data
+                "b64": b64_data,
+                "prompt": current_prompt  # 使用したプロンプトを保存
             })
         
         if progress_callback:
-            progress_callback(i + 1, n, f"Image {i + 1}/{n} complete")
+            progress_callback(i + 1, num_to_gen, f"Image {i + 1}/{num_to_gen} complete")
     
     return images
 
 
 def generate_images(
-    prompt: str,
+    prompt: any,  # str または list[str]
     model: str,
     n: int,
     size: str,
@@ -593,6 +765,18 @@ def generate_images(
     if not client:
         raise ValueError("OpenAI APIキーが設定されていません")
     
+    # プロンプトがリストの場合は、一括生成ではなく個別生成ループに委譲
+    if isinstance(prompt, list):
+        return generate_images_with_progress(
+            prompt=prompt,
+            model=model,
+            n=n,
+            size=size,
+            quality=quality,
+            background=background,
+            output_format=output_format
+        )
+
     # サイズの変換（autoの場合はデフォルト）
     api_size = size if size != "auto" else "1024x1024"
     
@@ -601,7 +785,6 @@ def generate_images(
     api_quality = quality_map.get(quality, "medium")
     
     # API呼び出し
-    # gpt-image-1.5 では response_format は使わない
     if model.startswith("gpt-image"):
         response = client.images.generate(
             model=model,
@@ -623,12 +806,10 @@ def generate_images(
     # 結果を処理
     images = []
     for data in response.data:
-        # gpt-image-1.5 はb64_json、他のモデルも同様
         b64_data = getattr(data, 'b64_json', None)
         if b64_data:
             image_bytes = base64.b64decode(b64_data)
         elif hasattr(data, 'url') and data.url:
-            # URLから取得
             import urllib.request
             with urllib.request.urlopen(data.url) as resp:
                 image_bytes = resp.read()
@@ -639,7 +820,8 @@ def generate_images(
         image = Image.open(io.BytesIO(image_bytes))
         images.append({
             "image": image,
-            "b64": b64_data
+            "b64": b64_data,
+            "prompt": prompt
         })
     
     return images
@@ -781,8 +963,8 @@ def render_cost_warning(quality: str, n: int) -> bool:
         
         # 警告表示
         st.warning(
-            f"[コスト高注意] Final品質は高コストです。"
-            f"今日のFinal生成回数: {final_count}/{FINAL_QUALITY_DAILY_LIMIT} 回"
+            f"**[コスト高注意]** Final品質は高コストです。\n"
+            f"今日の生成回数: {final_count}/{FINAL_QUALITY_DAILY_LIMIT}"
         )
         
         # 確認チェックボックス
@@ -841,7 +1023,7 @@ def render_reference_library() -> list[dict]:
     max_count = saved_data.get("max_count", 5)
     
     # --- 参照画像の選択 ---
-    st.markdown("#### Use Reference")
+    st.markdown('<p class="label-text">Use Reference</p>', unsafe_allow_html=True)
     
     # 選択肢を構築
     options = ["None (参照しない)"]
@@ -867,7 +1049,7 @@ def render_reference_library() -> list[dict]:
         if result:
             img, b64 = result
             # 選択された画像をプレビュー
-            st.image(img, width=100, caption=options[selected_index])
+            st.image(img, width=100)
             
             # 参照情報を取得
             ref_info = next((r for r in saved_refs if r["id"] == selected_id), None)
@@ -878,48 +1060,47 @@ def render_reference_library() -> list[dict]:
                     "name": ref_info["name"]
                 })
     
-    st.divider()
+    st.markdown('<hr style="margin: 1.5rem 0; opacity: 0.1;">', unsafe_allow_html=True)
     
     # --- 参照画像ライブラリ管理 ---
-    with st.expander(f"Manage Library ({len(saved_refs)}/{max_count})", expanded=False):
+    with st.expander(f"Library ({len(saved_refs)}/{max_count})", expanded=False):
         
         # 保存済み画像の表示
         if saved_refs:
-            st.markdown("**Saved References:**")
+            st.markdown('<p class="label-text">Saved References</p>', unsafe_allow_html=True)
             for ref in saved_refs:
-                col1, col2, col3 = st.columns([1, 2, 1])
-                
-                with col1:
-                    # サムネイル表示
-                    result = get_saved_reference_image(ref["id"])
-                    if result:
-                        img, _ = result
-                        st.image(img, width=60)
-                
-                with col2:
-                    st.markdown(f"**{ref['name']}**")
-                    st.caption(f"Type: {ref['type']}")
-                
-                with col3:
-                    if st.button("Delete", key=f"del_{ref['id']}", type="secondary"):
-                        if delete_saved_reference(ref["id"]):
-                            st.success(f"Deleted: {ref['name']}")
-                            st.rerun()
-            
-            st.divider()
+                # デザイン崩れ防止のためレイアウト変更
+                with st.container():
+                    col1, col2 = st.columns([1, 3])
+                    with col1:
+                        # サムネイル表示
+                        result = get_saved_reference_image(ref["id"])
+                        if result:
+                            img, _ = result
+                            st.image(img, use_container_width=True)
+                    
+                    with col2:
+                        st.markdown(f'<p class="label-text" style="margin-bottom: 0;">{ref["name"]}</p>', unsafe_allow_html=True)
+                        st.markdown(f'<p class="helper-text">{ref["type"]}</p>', unsafe_allow_html=True)
+                        if st.button("Delete", key=f"del_{ref['id']}", type="secondary", use_container_width=False):
+                            if delete_saved_reference(ref["id"]):
+                                st.success(f"Deleted: {ref['name']}")
+                                st.rerun()
+                st.markdown('<hr style="margin: 0.5rem 0; opacity: 0.05;">', unsafe_allow_html=True)
         
         # 新規追加
         if len(saved_refs) < max_count:
-            st.markdown("**Add New Reference:**")
+            st.markdown('<p class="label-text" style="margin-top: 1rem;">Add New Reference</p>', unsafe_allow_html=True)
             
             new_name = st.text_input(
                 "Name",
-                placeholder="e.g. Tsukineko, Background A",
-                key="new_ref_name"
+                placeholder="名前を入力",
+                key="new_ref_name",
+                label_visibility="collapsed"
             )
             
             # Type選択とヘルプ
-            type_col, help_col = st.columns([4, 1])
+            type_col, help_col = st.columns([6, 1])
             
             with type_col:
                 type_options = {
@@ -932,38 +1113,40 @@ def render_reference_library() -> list[dict]:
                     options=list(type_options.keys()),
                     format_func=lambda x: type_options[x],
                     index=0,
-                    key="new_ref_type"
+                    key="new_ref_type",
+                    label_visibility="collapsed"
                 )
             
             with help_col:
-                st.markdown("")  # スペーサー
                 with st.popover("?"):
                     st.markdown("""
-**Type の説明**
+<p class="label-text">Type の説明</p>
+<hr style="margin: 0.5rem 0; opacity: 0.1;">
 
 | Type | 用途 |
 |------|------|
-| **キャラクター** | キャラの外見参照（髪色、服装、アートスタイル） |
-| **背景** | 背景/シーン参照（風景、建物、雰囲気） |
-| **スタイル** | 色味/雰囲気/素材をまとめて参照 |
-""")
+| **キャラクター** | キャラの外見参照 |
+| **背景** | 背景/シーン参照 |
+| **スタイル** | 色味/雰囲気を参照 |
+""", unsafe_allow_html=True)
             
             new_file = st.file_uploader(
                 "Image",
                 type=["png", "jpg", "jpeg"],
-                key="new_ref_file"
+                key="new_ref_file",
+                label_visibility="collapsed"
             )
             
-            if st.button("Save Reference", type="primary", disabled=not (new_name and new_file)):
+            if st.button("Save to Library", type="primary", disabled=not (new_name and new_file), use_container_width=True):
                 if new_name and new_file:
                     if add_saved_reference(new_name, new_file.getvalue(), new_type):
                         st.success(f"Saved: {new_name}")
                         st.rerun()
                     else:
-                        st.error("Failed to save (max limit reached)")
+                        st.error("Failed to save")
         else:
-            st.info(f"Library full ({max_count}/{max_count}). Delete to add more.")
-    
+            st.info(f"Library full ({max_count}/{max_count})")
+
     # 選択結果のサマリー
     if ref_images:
         st.success(f"Using: {ref_images[0]['name']}")
@@ -977,8 +1160,8 @@ def render_reference_library() -> list[dict]:
 def render_sidebar():
     """サイドバーの共通設定をレンダリング"""
     with st.sidebar:
-        st.markdown("## Settings")
-        st.divider()
+        st.markdown('<p class="heading-2" style="font-size: 1.4rem !important; margin-top: 0 !important;">Settings</p>', unsafe_allow_html=True)
+        st.markdown('<hr style="margin: 0.5rem 0 1rem 0; opacity: 0.1;">', unsafe_allow_html=True)
         
         # APIキー確認
         if OPENAI_API_KEY:
@@ -1055,7 +1238,7 @@ def render_sidebar():
             help="File format for saving"
         )
         
-        st.divider()
+        st.markdown('<hr style="margin: 1.5rem 0; opacity: 0.1;">', unsafe_allow_html=True)
         
         # デバッグモード
         show_prompt = st.checkbox(
@@ -1064,25 +1247,53 @@ def render_sidebar():
             help="Display the prompt used for generation"
         )
         
-        st.divider()
+        st.markdown('<hr style="margin: 1.5rem 0; opacity: 0.1;">', unsafe_allow_html=True)
         
         # 生成統計（品質別）
-        st.markdown("### Generation Stats")
-        
+        stat_header_col, help_col = st.columns([6, 1])
+        with stat_header_col:
+            st.markdown('<p class="heading-3" style="margin-top: 0 !important;">Generation Stats</p>', unsafe_allow_html=True)
+        with help_col:
+            with st.popover("?"):
+                st.markdown("""
+<p class="label-text">品質の定義</p>
+<hr style="margin: 0.5rem 0; opacity: 0.1;">
+
+| 品質 | 説明 |
+|------|------|
+| **Draft** | 低解像度・高速・低コスト |
+| **Standard** | 標準的な品質と速度 |
+| **Final** | 高精細・低速・高コスト |
+""", unsafe_allow_html=True)
+
         counts = st.session_state.generation_count
         
-        # 品質別カウンター表示
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Draft", counts["draft"], help="Low quality (low cost)")
-        with col2:
-            st.metric("Standard", counts["standard"], help="Standard quality")
-        with col3:
-            st.metric("Final", counts["final"], delta=None, help="High quality (high cost)")
+        # カスタム統計カード (HTML/CSS)
+        st.markdown(f"""
+        <div class="stat-container">
+            <div class="stat-card">
+                <div class="stat-label">Draft</div>
+                <div class="stat-value">{counts["draft"]}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Standard</div>
+                <div class="stat-value">{counts["standard"]}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Final</div>
+                <div class="stat-value">{counts["final"]}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # 合計
+        # 合計（右寄せデザイン統合）
         total = get_total_generation_count()
-        st.caption(f"Total generations: **{total}**")
+        st.markdown(f"""
+        <div class="total-gen-container">
+            <span class="total-gen-text">Total Generations: </span>
+            <span class="total-gen-value">{total}</span>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Final品質の残り回数
         final_remaining = FINAL_QUALITY_DAILY_LIMIT - counts["final"]
@@ -1095,10 +1306,10 @@ def render_sidebar():
             else:
                 st.error(f"Final limit reached ({FINAL_QUALITY_DAILY_LIMIT})")
         
-        st.divider()
+        st.markdown('<hr style="margin: 1.5rem 0; opacity: 0.1;">', unsafe_allow_html=True)
         
         # 参照画像ライブラリ
-        st.markdown("### Reference Library")
+        st.markdown('<p class="heading-3" style="margin-top: 0 !important;">Reference Library</p>', unsafe_allow_html=True)
         
         ref_images = render_reference_library()
         
@@ -1131,18 +1342,18 @@ def render_field(field_name: str, template: dict, field_defs: dict) -> any:
     if field_name == "intent_ja":
         return st.text_area(
             label,
-            placeholder=field_def.get("placeholder", "Describe the banner you want to create"),
+            placeholder=field_def.get("placeholder", "作成したいバナーの内容を詳しく入力してください"),
             height=120,
-            help="Describe the banner content in detail"
+            help="バナーのメインテーマや雰囲気を記述します"
         )
     
     # text_verbatim: テキストエリア（完全一致用）
     elif field_name == "text_verbatim":
         return st.text_area(
             label,
-            placeholder=field_def.get("placeholder", "Enter the exact text to display"),
+            placeholder=field_def.get("placeholder", "バナー内に表示する正確な文字列を入力してください"),
             height=80,
-            help="Enter the exact text to be rendered on the banner"
+            help="入力したテキストがそのまま描画されます"
         )
     
     # variation_axis: ラジオボタン（日本語化 + ポップアップ）
@@ -1161,33 +1372,25 @@ def render_field(field_name: str, template: dict, field_defs: dict) -> any:
         default_label = value_to_label.get(default_axis, "なし")
         default_index = list(axis_options.keys()).index(default_label) if default_label in axis_options else 0
         
-        # ラベルとヘルプボタンを横並び
-        label_col, help_col = st.columns([4, 1])
-        with label_col:
-            st.markdown(f"**{label}**")
-        with help_col:
-            with st.popover("?"):
-                st.markdown("""
-**バリエーション軸の説明**
-
-| オプション | 説明 |
-|-----------|------|
-| **なし** | バリエーションなし（単一生成） |
-| **カラー** | 色味を変えたバリエーション |
-| **構図** | アングル・配置を変えたバリエーション |
-| **表情** | キャラクターの表情を変えたバリエーション |
-| **季節** | 季節感を変えたバリエーション |
-""")
-        
         selected = st.radio(
             label,
             options=list(axis_options.keys()),
             index=default_index,
             horizontal=True,
-            label_visibility="collapsed"
+            help="""
+**バリエーション軸の説明**
+
+| オプション | 説明 |
+|-----------|------|
+| **なし** | バリエーションなし |
+| **カラー** | 色味を変えた展開 |
+| **構図** | アングル・配置の展開 |
+| **表情** | 表情のバリエーション |
+| **季節** | 季節感のバリエーション |
+"""
         )
         return axis_options[selected]
-    
+
     # variation_details: テキスト入力（variation_axis選択時のみ）
     elif field_name == "variation_details":
         # variation_axisがform_dataにあるか確認
@@ -1205,7 +1408,7 @@ def render_field(field_name: str, template: dict, field_defs: dict) -> any:
     
     # palette: 4つのカラーピッカー
     elif field_name == "palette":
-        st.markdown(f"**{label}**")
+        st.markdown(f'<p class="label-text" style="margin-bottom: 0.5rem;">{label}</p>', unsafe_allow_html=True)
         cols = st.columns(4)
         colors = {}
         color_names = ["Primary", "Secondary", "Accent", "Extra"]
@@ -1215,7 +1418,8 @@ def render_field(field_name: str, template: dict, field_defs: dict) -> any:
             with col:
                 colors[name.lower()] = st.color_picker(
                     name,
-                    value=default_colors[i]
+                    value=default_colors[i],
+                    label_visibility="visible"
                 )
         return colors
     
@@ -1282,44 +1486,36 @@ def render_field(field_name: str, template: dict, field_defs: dict) -> any:
         default_label = value_to_label.get(default_layout, "テキスト中央")
         default_index = list(layout_options.keys()).index(default_label) if default_label in layout_options else 0
         
-        # ラベルとヘルプボタンを横並び
-        label_col, help_col = st.columns([4, 1])
-        with label_col:
-            st.markdown(f"**{label}**")
-        with help_col:
-            with st.popover("?"):
-                st.markdown("""
-**レイアウト設定の説明**
-
-| オプション | 説明 |
-|-----------|------|
-| **テキスト中央** | テキストを中央に配置、バランスの取れた構図 |
-| **余白重視** | 余白を多めに取り、ミニマルな要素配置 |
-| **情報量重視** | 情報を詰め込んだ、効率的なスペース使用 |
-| **ミニマル** | 必要最小限の要素のみ、超シンプル |
-| **非対称** | 動的な非対称構図、視覚的なインパクト |
-""")
-        
         selected = st.selectbox(
             label,
             options=list(layout_options.keys()),
             index=default_index,
-            label_visibility="collapsed"
+            help="""
+**レイアウト設定の説明**
+
+| オプション | 説明 |
+|-----------|------|
+| **テキスト中央** | バランスの取れた基本構図 |
+| **余白重視** | ゆったりとした配置 |
+| **情報量重視** | 要素を多く配置 |
+| **ミニマル** | 極限までシンプルに |
+| **非対称** | 動きのあるダイナミックな配置 |
+"""
         )
         return layout_options[selected]
-    
+
     # size_set: サイズプリセット表示
     elif field_name == "size_set":
-        st.markdown(f"**{label}**")
+        st.markdown(f'<p class="label-text" style="margin-bottom: 0.2rem;">{label}</p>', unsafe_allow_html=True)
         size_set = defaults.get("size_set", [])
         if size_set:
             for size_info in size_set:
-                st.caption(f"- {size_info.get('name', 'Custom')}: {size_info.get('width', 0)}x{size_info.get('height', 0)}")
+                st.markdown(f'<p class="helper-text" style="margin: 0;">• {size_info.get("name", "Custom")}: {size_info.get("width", 0)}x{size_info.get("height", 0)}</p>', unsafe_allow_html=True)
         return size_set
     
     # その他のフィールド
     else:
-        return st.text_input(label, help=f"Enter value for {field_name}")
+        return st.text_input(label, placeholder=f"{label} を入力")
 
 
 # ============================================
@@ -1332,7 +1528,7 @@ def display_generated_images(
     output_format: str
 ):
     """生成された画像を表示"""
-    st.markdown("### Generated Images")
+    st.markdown('<p class="heading-2">Generated Banners</p>', unsafe_allow_html=True)
     
     # グリッド表示
     cols_per_row = min(len(images), 3)
@@ -1370,30 +1566,44 @@ def display_generated_images(
 def render_main_area(templates: list, field_defs: dict, settings: dict):
     """メインエリアをレンダリング"""
     
-    # ヘッダー
-    st.markdown('<h1 class="main-header">Tsukineko Banner Maker</h1>', unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #a0a0a0;'>AI-Powered Banner Generation Tool</p>", unsafe_allow_html=True)
+    # ヒーローセクション（タイトル、サブタイトル、キャラクター）
+    st.markdown('<div class="hero-section">', unsafe_allow_html=True)
+    st.markdown('<h1 class="heading-1">Tsukineko Banner Maker</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-header" style="margin-bottom: 0 !important;">AI-Powered Banner Generation Tool</p>', unsafe_allow_html=True)
     
-    st.divider()
+    # キャラクター配置
+    logo_path = Path("assets/character.png")
+    if not logo_path.exists():
+        logo_path = Path("assets/logo.png")
+        
+    if logo_path.exists():
+        # HTML/CSSベースで影付きキャラクターを表示
+        with open(logo_path, "rb") as f:
+            data = base64.b64encode(f.read()).decode("utf-8")
+        st.markdown(f"""
+            <div class="hero-character-container">
+                <img src="data:image/png;base64,{data}" class="hero-character" style="width: 160px;">
+            </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<hr style="margin: 0.5rem 0 1.2rem 0; opacity: 0.05;">', unsafe_allow_html=True)
     
     # テンプレート選択
-    template_options = {f"{t['label']} ({t['id']})": t for t in templates}
+    template_options = {t['label']: t for t in templates}
     
-    # ラベルとヘルプボタン
-    label_col, help_col = st.columns([6, 1])
-    with label_col:
-        st.markdown("**Select Template**")
-    with help_col:
-        with st.popover("?"):
-            st.markdown("""
+    selected_label = st.selectbox(
+        "テンプレート選択", # 日本語に変更
+        options=list(template_options.keys()),
+        help="""
 **テンプレート一覧**
 
 | テンプレート | 説明 |
 |-------------|------|
-| **キャラ統一バナー（3案）** | 構図違いの3パターン生成 |
+| **キャラ統一バナー** | 構図違いの3パターン生成 |
 | **文字入りバナー** | テキストを正確に描画 |
 | **季節感バリエーション** | 春夏秋冬の4パターン |
-| **色違いバナー（3案）** | 配色違いの3パターン |
+| **色違いバナー** | 配色違いの3パターン |
 | **サイズ展開テンプレ** | 複数サイズを一括生成 |
 | **シンプルロゴバナー** | 余白多めのミニマル |
 | **情報詰め込み型** | 情報量の多いバナー |
@@ -1402,40 +1612,32 @@ def render_main_area(templates: list, field_defs: dict, settings: dict):
 | **テキスト差替え** | 文字部分のみ編集 |
 | **背景入替え** | 背景を別の画像に |
 | **要素追加** | 画像に要素を追加 |
-""")
-    
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        selected_label = st.selectbox(
-            "Select Template",
-            options=list(template_options.keys()),
-            label_visibility="collapsed"
-        )
+""",
+        label_visibility="visible"
+    )
     
     selected_template = template_options[selected_label]
     
-    with col2:
-        action_badge = "Generate" if selected_template["action"] == "generate" else "Edit"
-        st.markdown(f"""
-        <div style='background: rgba(233, 69, 96, 0.2); padding: 0.5rem 1rem; border-radius: 8px; text-align: center; margin-top: 1.7rem;'>
-            <span style='color: #ff6b6b; font-weight: 600;'>{action_badge}</span>
-            <span style='color: #a0a0a0; margin-left: 0.5rem;'>x {selected_template['n']} images</span>
-        </div>
-        """, unsafe_allow_html=True)
+    # 適用枚数の表示（セレクトボックスの下に控えめに表示）
+    action_label = "生成" if selected_template["action"] == "generate" else "編集"
+    st.markdown(f"""
+    <p style='color: #86868b; font-size: 0.85rem; margin-top: -0.5rem; margin-bottom: 1rem; margin-left: 0.2rem;'>
+        適用モード: <strong>{action_label}</strong> &nbsp;|&nbsp; 
+        枚数: <strong>{selected_template['n']} 枚</strong>
+    </p>
+    """, unsafe_allow_html=True)
     
     # テンプレート説明
     st.markdown(f"""
     <div class="template-description">
-        <strong>{selected_template['label']}</strong><br>
-        <span style='color: #a0a0a0;'>{selected_template['description']}</span>
+        <p class="label-text" style="margin-bottom: 0.2rem;">{selected_template['label']}</p>
+        <span class="helper-text">{selected_template['description']}</span>
     </div>
     """, unsafe_allow_html=True)
     
-    st.divider()
+    st.markdown('<hr style="margin: 0.5rem 0; opacity: 0.05;">', unsafe_allow_html=True)
     
     # 動的フィールド表示
-    st.markdown("### Input Fields")
-    
     form_data = {}
     fields = selected_template.get("fields", [])
     
@@ -1453,7 +1655,7 @@ def render_main_area(templates: list, field_defs: dict, settings: dict):
         if value is not None:
             form_data[field_name] = value
     
-    st.divider()
+    st.markdown('<hr style="margin: 0.8rem 0; opacity: 0.05;">', unsafe_allow_html=True)
     
     # コスト警告とチェック
     n = selected_template["n"]
@@ -1483,9 +1685,31 @@ def render_main_area(templates: list, field_defs: dict, settings: dict):
                 **form_data
             }
             
-            # プロンプト生成
+            # プロンプト生成（バリエーション対応）
+            variation_axis = form_data.get("variation_axis")
+            variation_details_raw = form_data.get("variation_details", "")
+            
             if selected_template["action"] == "generate":
-                prompt = build_generate_prompt(payload)
+                if variation_axis and variation_details_raw:
+                    # 改行または読点で分割してリスト化
+                    import re
+                    # セパレーターとして改行、カンマ、読点、スラッシュを許容
+                    v_list = re.split(r'[\n,，、/]+', variation_details_raw.strip())
+                    v_list = [v.strip() for v in v_list if v.strip()]
+                    
+                    if v_list:
+                        # 枚数分（n枚）の個別プロンプトを作成
+                        prompts = []
+                        for i in range(n):
+                            # リストが足りない場合はループ、多すぎる場合は切り捨て
+                            v_detail = v_list[i % len(v_list)]
+                            p = build_generate_prompt(payload, specific_variation=v_detail)
+                            prompts.append(p)
+                        prompt = prompts # リストとして保持
+                    else:
+                        prompt = build_generate_prompt(payload)
+                else:
+                    prompt = build_generate_prompt(payload)
             else:
                 prompt = build_edit_prompt(payload)
             
@@ -1497,15 +1721,24 @@ def render_main_area(templates: list, field_defs: dict, settings: dict):
                     ref_analysis = analyze_reference_images(ref_images)
                 
                 if ref_analysis:
-                    # 分析結果をプロンプトの先頭に追加
-                    prompt = f"{ref_analysis}\n\n---\n\n{prompt}"
+                    # 分析結果をプロンプト（リストまたは文字列）の先頭に追加
+                    if isinstance(prompt, list):
+                        prompt = [f"{ref_analysis}\n\n---\n\n{p}" for p in prompt]
+                    else:
+                        prompt = f"{ref_analysis}\n\n---\n\n{prompt}"
             
-            st.session_state.last_prompt = prompt
+            # Session State 保存（デバッグ表示用は最初の1つまたは文字列）
+            st.session_state.last_prompt = prompt[0] if isinstance(prompt, list) else prompt
             
             # デバッグモード: プロンプト表示
             if settings["show_prompt"]:
                 with st.expander("Generated Prompt", expanded=True):
-                    st.code(prompt, language="text")
+                    if isinstance(prompt, list):
+                        for idx, p in enumerate(prompt):
+                            st.markdown(f"**Image {idx+1} Prompt:**")
+                            st.code(p, language="text")
+                    else:
+                        st.code(prompt, language="text")
                 if ref_images and ref_analysis:
                     st.success(f"Reference images analyzed: {len(ref_images)} image(s)")
             
@@ -1619,8 +1852,8 @@ def render_main_area(templates: list, field_defs: dict, settings: dict):
     
     # 前回生成した画像の表示（ボタンクリック外）
     if st.session_state.last_generated_images and not st.session_state.is_generating:
-        st.divider()
-        st.markdown("### Previous Results")
+        st.markdown('<hr style="margin: 2rem 0; opacity: 0.1;">', unsafe_allow_html=True)
+        st.markdown('<p class="heading-2">Previous Creations</p>', unsafe_allow_html=True)
         cols = st.columns(min(len(st.session_state.last_generated_images), 3))
         for i, img in enumerate(st.session_state.last_generated_images):
             with cols[i % len(cols)]:

@@ -1,106 +1,219 @@
-# 🐱 月猫バナーメーカー (tsukineko-banner-maker)
+# 🌙 月猫バナーメーカー (Tsukineko Banner Maker)
 
-**OpenAI gpt-image-1.5** を活用したAIバナー生成ツール。最新の画像生成モデルとテンプレートシステムで、プロ品質のバナーを簡単に作成できます。
+> **「プロ品質のバナーを、AIと一緒に。」**
+>
+> OpenAI gpt-image-1.5 を活用した、テンプレート駆動型バナー生成ツール。
 
----
-
-## 🎯 なぜ gpt-image-1.5 なのか？
-
-| 特徴 | gpt-image-1.5 | 従来のDALL-E 3 |
-|------|---------------|----------------|
-| **テキスト描画精度** | 非常に高い | 文字化けしやすい |
-| **参照画像の理解** | キャラ・色・素材を正確に反映 | 限定的 |
-| **スタイル一貫性** | 複数枚でもブレにくい | バラつきやすい |
-| **プロンプト理解** | 日本語の意図も正確に解釈 | 英語最適化 |
-| **編集機能** | 部分編集が可能 | 全体再生成のみ |
-
-> 📖 参考: [OpenAI Image Generation Guide](https://platform.openai.com/docs/guides/images)
+![Tsukineko Banner Maker](assets/character.png)
 
 ---
 
-## ✨ このツールでできること
+## 📖 プロジェクト概要
 
-### 🖼️ 1. 参照画像でスタイルを指定
+**月猫バナーメーカー**は、最新のAI画像生成モデル `gpt-image-1.5` を活用し、テンプレートシステムと参照画像機能を組み合わせることで、**一貫性のあるプロ品質バナー**を簡単に作成できるWebアプリケーションです。
 
-従来のAI画像生成は「テキストだけ」で指示する必要がありました。  
-このツールでは **3種類の参照画像** をアップロードして、視覚的にスタイルを指定できます：
+従来のAI画像生成ツールでは困難だった「テキストの正確な描画」「スタイルの一貫性維持」「複数バリエーションの一括生成」を実現しています。
 
-| 参照タイプ | 用途 | 効果 |
-|-----------|------|------|
-| **キャラ参照** | 自社マスコットの画像 | 同じキャラクターデザインを維持 |
-| **色/世界観参照** | ブランドカラーの画像 | 配色・雰囲気を再現 |
-| **素材参照** | テクスチャ・装飾素材 | 特定の質感・パターンを反映 |
+---
 
-### 🎨 2. テンプレートで一括バリエーション生成
+## ✨ 主な機能
 
-1回のクリックで複数パターンを生成：
+### 1. 🎨 参照画像ライブラリ
 
-- **構図バリエーション**: 正面・斜め・横顔の3パターン
-- **季節バリエーション**: 春夏秋冬の4パターン
-- **配色バリエーション**: 暖色系・寒色系・ナチュラル系
+3種類の参照画像を保存・選択して、生成スタイルを視覚的に指定：
 
-### ✏️ 3. 正確なテキスト描画
+| タイプ | 用途 | 効果 |
+|--------|------|------|
+| **キャラクター** | マスコット・人物 | キャラクターデザインを維持 |
+| **背景** | 風景・シーン | 世界観・雰囲気を再現 |
+| **スタイル** | テクスチャ・装飾 | 画風・質感を反映 |
 
-`text_verbatim` 機能で、バナーに表示するテキストを**完全一致**で描画：
+### 2. 📋 12種類のテンプレート
+
+目的別に最適化されたプリセットで、ワンクリック生成：
+
+- **Generate系 (8種)**: 新規バナーの一括生成
+- **Edit系 (4種)**: 既存画像の部分編集
+
+### 3. ✏️ 正確なテキスト描画
+
+`text_verbatim` 機能で、バナー内のテキストを**完全一致**で描画。スペルミスや文字化けを防止。
+
+### 4. 🔄 バリエーション一括生成
+
+1回のクリックで複数パターンを自動展開：
+- 構図バリエーション（正面・斜め・横顔）
+- 季節バリエーション（春夏秋冬）
+- 配色バリエーション（暖色・寒色・ナチュラル）
+
+---
+
+## 🛠 システムアーキテクチャ
+
+本アプリケーションは、Streamlit をベースに構築されたシングルページアプリケーションです。
+
+```mermaid
+graph TD
+    subgraph "Browser"
+        UI["Streamlit UI"]
+    end
+    
+    subgraph "Backend (Python)"
+        App["app.py<br/>メインアプリケーション"]
+        PB["prompt_builder.py<br/>プロンプト生成"]
+        Templates["templates.yaml<br/>テンプレート定義"]
+        RefLib["saved_references.json<br/>参照画像ライブラリ"]
+    end
+    
+    subgraph "External API"
+        GPT["OpenAI gpt-image-1.5<br/>画像生成"]
+        Vision["OpenAI gpt-4o-mini<br/>参照画像解析"]
+    end
+
+    UI -->|1. ユーザー入力| App
+    App -->|2. テンプレート読込| Templates
+    App -->|3. 参照画像取得| RefLib
+    App -->|4. プロンプト構築| PB
+    PB -->|5. 参照画像解析| Vision
+    Vision -->|6. 特徴抽出| PB
+    PB -->|7. 最適化プロンプト| GPT
+    GPT -->|8. 生成画像| App
+    App -->|9. 結果表示| UI
+```
+
+### アーキテクチャの特徴
+
+- **テンプレート駆動**: `templates.yaml` でテンプレートを定義し、UIとプロンプトを自動生成
+- **プロンプトエンジニアリング**: `prompt_builder.py` で固定ルールと動的コンテンツを組み合わせ
+- **参照画像解析**: Vision API で参照画像の特徴を抽出し、プロンプトに反映
+- **セッション管理**: Streamlit の `session_state` で状態を永続化
+
+---
+
+## 🔄 処理シーケンス
+
+ユーザーがバナーを生成するまでのフローです。
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as Streamlit UI
+    participant App as app.py
+    participant PB as prompt_builder.py
+    participant API as OpenAI API
+
+    Note over User, UI: テンプレート選択 & 設定入力
+    User->>UI: 生成ボタン押下
+    UI->>App: フォームデータ送信
+    
+    opt 参照画像あり
+        App->>API: 参照画像解析 (Vision API)
+        API-->>App: 特徴記述テキスト
+    end
+    
+    App->>PB: プロンプト構築リクエスト
+    PB->>PB: 固定ルール + 動的コンテンツ結合
+    PB-->>App: 最適化プロンプト
+    
+    loop 各バリエーション
+        App->>API: images.generate()
+        API-->>App: Base64画像データ
+    end
+    
+    App->>UI: 生成結果表示
+    UI-->>User: ダウンロード可能な画像
+```
+
+---
+
+## 💻 技術スタック
+
+| Category | Technology | Version | Usage |
+|:---------|:-----------|:--------|:------|
+| **Framework** | **Streamlit** | 1.52+ | UI & セッション管理 |
+| **Language** | **Python** | 3.11+ | バックエンドロジック |
+| **AI Model** | **gpt-image-1.5** | - | 画像生成 |
+| **AI Model** | **gpt-4o-mini** | - | 参照画像解析 (Vision) |
+| **Image** | **Pillow** | 11.0+ | 画像処理・変換 |
+| **Config** | **PyYAML** | 6.0+ | テンプレート定義 |
+| **Env** | **python-dotenv** | 1.0+ | 環境変数管理 |
+
+---
+
+## 📂 ディレクトリ構造
 
 ```
-入力: "SPRING SALE 2025"
-結果: 一字一句正確に描画（スペルミスなし）
+tsukineko-banner-maker/
+├── app.py                    # メインアプリケーション
+│                             # - UI構築 (Streamlit)
+│                             # - OpenAI API連携
+│                             # - 参照画像ライブラリ管理
+│                             # - カスタムCSS (プレミアムデザイン)
+│
+├── prompt_builder.py         # プロンプト生成エンジン
+│                             # - 固定ルール (英語ブロック)
+│                             # - 動的コンテンツ構築
+│                             # - ネガティブプロンプト
+│
+├── templates.yaml            # テンプレート定義
+│                             # - Generate系 8種
+│                             # - Edit系 4種
+│                             # - フィールド定義
+│
+├── assets/
+│   ├── character.png         # マスコットキャラクター
+│   └── saved_references/     # 保存済み参照画像
+│       ├── ref_001.png
+│       └── ...
+│
+├── saved_references.json     # 参照画像メタデータ
+├── requirements.txt          # Python依存パッケージ
+├── Dockerfile                # コンテナ化用
+├── .env.example              # 環境変数サンプル
+├── .gitignore                # Git除外設定
+└── README.md                 # このファイル
 ```
 
-### 🔧 4. 部分編集（Edit機能）
-
-既存画像の一部だけを変更：
-
-- 色だけ変更（構図はそのまま）
-- テキストだけ差し替え
-- 背景だけ変更
-- 小物・装飾を追加
-
 ---
 
-## 💡 従来ツールとの違い
+## 🚀 ローカルでの実行方法
 
-| 機能 | 月猫バナーメーカー | Canva AI | Midjourney |
-|------|-------------------|----------|------------|
-| テンプレート一括生成 | ✅ | ❌ | ❌ |
-| 参照画像3種類対応 | ✅ | 限定的 | 1種類のみ |
-| 正確なテキスト描画 | ✅ | ❌ | ❌ |
-| 部分編集 | ✅ | ❌ | ❌ |
-| API直接利用 | ✅ | ❌ | ❌ |
-| カスタマイズ可能 | ✅ | ❌ | ❌ |
+### 1. 前提条件
 
----
+- Python 3.11 以上
+- OpenAI API Key（gpt-image-1.5 利用には組織認証が必要）
 
-## 🚀 主な機能一覧
-
-- **12種類のテンプレート**: Generate系8個 + Edit系4個
-- **バリエーション生成**: 色・構図・季節などの軸で複数バリエーションを一括生成
-- **参照画像アップロード**: キャラ/色/素材の参照画像でスタイルを指定
-- **品質選択**: Draft(低)/Standard(中)/Final(高)の3段階
-- **コスト管理**: Final品質の生成回数制限と警告表示
-- **プログレス表示**: 複数枚生成時のリアルタイム進捗表示
-- **デバッグモード**: 生成プロンプトの確認機能
-
-## 🚀 クイックスタート
-
-### ローカル実行
+### 2. インストール
 
 ```bash
-# 依存パッケージのインストール
+git clone https://github.com/nekoai-lab/tsukineko-banner-maker.git
+cd tsukineko-banner-maker
 pip install -r requirements.txt
+```
 
-# 環境変数の設定
+### 3. 環境変数の設定
+
+```bash
 cp .env.example .env
-# .env ファイルを編集して OPENAI_API_KEY を設定
+```
 
-# アプリ起動
+`.env` ファイルを編集して API キーを設定：
+
+```env
+OPENAI_API_KEY=sk-proj-xxxxxxxx
+```
+
+### 4. 実行
+
+```bash
 streamlit run app.py
 ```
 
-ブラウザで http://localhost:8501 にアクセス
+ブラウザで `http://localhost:8501` にアクセス
 
-### Docker実行
+---
+
+## 🐳 Docker での実行
 
 ```bash
 # イメージのビルド
@@ -110,90 +223,16 @@ docker build -t tsukineko-banner-maker .
 docker run -p 8080:8080 -e OPENAI_API_KEY=sk-proj-xxx tsukineko-banner-maker
 ```
 
-ブラウザで http://localhost:8080 にアクセス
+ブラウザで `http://localhost:8080` にアクセス
 
-## ☁️ Cloud Run デプロイ
-
-### 1. Google Cloud SDK のセットアップ
-
-```bash
-gcloud auth login
-gcloud config set project YOUR_PROJECT_ID
-```
-
-### 2. Artifact Registry の作成（初回のみ）
-
-```bash
-gcloud artifacts repositories create tsukineko-repo \
-    --repository-format=docker \
-    --location=asia-northeast1 \
-    --description="Tsukineko Banner Maker"
-```
-
-### 3. イメージのビルドとプッシュ
-
-```bash
-# Cloud Build でビルド
-gcloud builds submit --tag asia-northeast1-docker.pkg.dev/YOUR_PROJECT_ID/tsukineko-repo/tsukineko-banner-maker
-
-# または、ローカルでビルドしてプッシュ
-docker build -t asia-northeast1-docker.pkg.dev/YOUR_PROJECT_ID/tsukineko-repo/tsukineko-banner-maker .
-docker push asia-northeast1-docker.pkg.dev/YOUR_PROJECT_ID/tsukineko-repo/tsukineko-banner-maker
-```
-
-### 4. Cloud Run へデプロイ
-
-```bash
-gcloud run deploy tsukineko-banner-maker \
-    --image asia-northeast1-docker.pkg.dev/YOUR_PROJECT_ID/tsukineko-repo/tsukineko-banner-maker \
-    --platform managed \
-    --region asia-northeast1 \
-    --allow-unauthenticated \
-    --set-env-vars OPENAI_API_KEY=sk-proj-xxx \
-    --memory 1Gi \
-    --cpu 1 \
-    --timeout 300
-```
-
-### 5. Secret Manager を使用（推奨）
-
-```bash
-# シークレットの作成
-echo -n "sk-proj-xxx" | gcloud secrets create openai-api-key --data-file=-
-
-# Cloud Run にシークレットをマウント
-gcloud run deploy tsukineko-banner-maker \
-    --image asia-northeast1-docker.pkg.dev/YOUR_PROJECT_ID/tsukineko-repo/tsukineko-banner-maker \
-    --platform managed \
-    --region asia-northeast1 \
-    --allow-unauthenticated \
-    --set-secrets OPENAI_API_KEY=openai-api-key:latest \
-    --memory 1Gi \
-    --cpu 1 \
-    --timeout 300
-```
-
-## 📁 プロジェクト構成
-
-```
-tsukineko-banner-maker/
-├── app.py              # Streamlit メインアプリ
-├── prompt_builder.py   # プロンプト生成ロジック
-├── templates.yaml      # テンプレート定義
-├── requirements.txt    # Python 依存パッケージ
-├── Dockerfile          # Cloud Run 用 Dockerfile
-├── .env.example        # 環境変数のサンプル
-├── .dockerignore       # Docker ビルド除外設定
-├── .gitignore          # Git 除外設定
-└── README.md           # このファイル
-```
+---
 
 ## 🎨 テンプレート一覧
 
 ### Generate系（新規生成）
 
 | ID | テンプレート名 | 生成枚数 | 説明 |
-|----|---------------|---------|------|
+|----|---------------|:--------:|------|
 | t01 | キャラ統一バナー | 3枚 | 構図違いの3パターン |
 | t02 | 文字入りバナー | 1枚 | テキスト完全一致描画 |
 | t03 | 季節感バリエーション | 4枚 | 春夏秋冬の4パターン |
@@ -206,19 +245,40 @@ tsukineko-banner-maker/
 ### Edit系（画像編集）
 
 | ID | テンプレート名 | 編集対象 | 説明 |
-|----|---------------|---------|------|
+|----|---------------|:--------:|------|
 | t09 | 色のみ変更 | color | 配色だけを変更 |
 | t10 | テキストのみ変更 | text | テキスト部分を差し替え |
 | t11 | 背景のみ変更 | background | 背景を差し替え |
 | t12 | 小物追加 | add_element | 装飾を追加 |
 
+---
+
+## 🆚 従来ツールとの比較
+
+| 機能 | 月猫バナーメーカー | Canva AI | Midjourney |
+|------|:------------------:|:--------:|:----------:|
+| テンプレート一括生成 | ✅ | ❌ | ❌ |
+| 参照画像3種類対応 | ✅ | △ | △ |
+| 正確なテキスト描画 | ✅ | ❌ | ❌ |
+| 部分編集 | ✅ | ❌ | ❌ |
+| カスタマイズ可能 | ✅ | ❌ | ❌ |
+
+---
+
 ## ⚙️ 環境変数
 
 | 変数名 | 必須 | 説明 |
-|--------|------|------|
+|--------|:----:|------|
 | `OPENAI_API_KEY` | ✅ | OpenAI API キー |
-| `ENV` | - | 環境識別子（development/production） |
+| `ENV` | - | 環境識別子 (development/production) |
 
-## 📝 ライセンス
+---
 
-MIT License
+## 🛡️ License & Credit
+
+- **Development**: Developed by **nekoai-lab**
+- **License**: MIT License
+
+---
+
+*Created with 🐱 & 🌙 by 月猫開発チーム*

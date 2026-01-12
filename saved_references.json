@@ -2,9 +2,21 @@
   "references": [
     {
       "id": "ref_001",
-      "name": "月ねこ",
+      "name": "月ねこデザイナーモード",
       "type": "character",
       "filename": "ref_001.png"
+    },
+    {
+      "id": "ref_002",
+      "name": "普通の月ねこ",
+      "type": "character",
+      "filename": "ref_002.png"
+    },
+    {
+      "id": "ref_003",
+      "name": "月ねこニュース背景",
+      "type": "background",
+      "filename": "ref_003.png"
     }
   ],
   "max_count": 5
