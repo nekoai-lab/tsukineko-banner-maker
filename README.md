@@ -3,8 +3,16 @@
 > **「バナー制作をもっと意図通りに、ChatGPT imagesと一緒に。」**
 >
 > OpenAI gpt-image-1.5 を活用した、テンプレート駆動型バナー生成ツール。公式プロンプトガイドをアプリで使いやすくしました。
+>
+> ChatGPT Images は“プロンプトの型”を守るほど再現性が上がる
+>
+> でも 型が長くなって、人力運用がしんどい
+>
+> だから テンプレ・パレット・サイズ・参照画像をUI化して、「難しい構図ほど分解して作れる」ようにした
+>
+> 結果、技術検証（条件を固定して比較）と実務量産が同じ土俵で回るようになった
 > 
-> 公式ガイド：https://cookbook.openai.com/examples/multimodal/image-gen-1.5-prompting_guide
+> プロンプトガイド公式ガイド：https://cookbook.openai.com/examples/multimodal/image-gen-1.5-prompting_guide
 
 <img width="1380" height="1224" alt="image" src="https://github.com/user-attachments/assets/3d512af6-8159-4abb-b42c-a3ce623a4599" />
 
