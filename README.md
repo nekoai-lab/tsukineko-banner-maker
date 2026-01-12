@@ -4,7 +4,7 @@
 >
 > OpenAI gpt-image-1.5 を活用した、テンプレート駆動型バナー生成ツール。
 
-![Tsukineko Banner Maker](assets/character.png)
+<img width="1380" height="1224" alt="image" src="https://github.com/user-attachments/assets/3d512af6-8159-4abb-b42c-a3ce623a4599" />
 
 ---
 
